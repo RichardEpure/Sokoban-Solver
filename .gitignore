@@ -2,3 +2,4 @@ env
 .idea
 
 resources/levels/*
+__pycache__
