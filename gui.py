@@ -94,7 +94,6 @@ class Button(Component):
         offset = self.rect.height/8
         self.active_rect.height = offset * 7
         self.active_rect.centery += offset
-        self.active_rect.y += offset
         self.normal_rect = self.rect.copy()
         print(self.rect)
         print(self.active_rect)
