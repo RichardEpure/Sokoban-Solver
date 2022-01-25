@@ -90,12 +90,12 @@ class Button(Component):
 
     def set_centre(self, x, y):
         super().set_centre(x, y)
-        self.active_rect = self.rect
+        self.active_rect = self.rect.copy()
         offset = self.rect.height/8
         self.active_rect.height = offset * 7
         self.active_rect.centery += offset
         self.active_rect.y += offset
-        self.normal_rect = self.rect
+        self.normal_rect = self.rect.copy()
         print(self.rect)
         print(self.active_rect)
 
