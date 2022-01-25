@@ -1,5 +1,7 @@
+import os
 import pygame
 from pygame.locals import *
+from gui import *
 
 
 def main():
@@ -17,33 +19,51 @@ def main():
 
     # Initialise screen
     pygame.init()
-    screen = pygame.display.set_mode((1920, 1080))
-    pygame.display.set_caption('Pygame Program')
-
-    # Fill background
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((0, 0, 0))
+    window = Window(1920, 1080)
+    pygame.display.set_caption('Sokoban')
 
     # Display some text
     font = pygame.font.Font(None, 36)
-    text = font.render("Hello There", 1, (180, 180, 180))
+    text = font.render("Sokoban", True, (255, 255, 255))
     textpos = text.get_rect()
-    textpos.centerx = background.get_rect().centerx
-    background.blit(text, textpos)
+    textpos.centerx = window.get_rect().centerx
+    window.draw(text, textpos)
 
-    # Blit everything to the screen
-    screen.blit(background, (0, 0))
-    pygame.display.flip()
+    buttons = []
+
+    button = Button('button_green_1', 'Play Game')
+    button.set_centre(window.center_x(), window.height/2)
+    buttons.append(button)
+    button.draw(window)
+
+    button = Button('button_green_1', 'Exit')
+    button.set_centre(window.center_x(), window.height/2 + button.rect.height + 30)
+    buttons.append(button)
+    button.draw(window)
 
     # Event loop
     while True:
+        window.background.fill((0,0,0))
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 return
 
-        screen.blit(background, (0, 0))
-        pygame.display.flip()
+        mouse_pos = pygame.mouse.get_pos()
+        left_mouse, mouse_wheel, right_mouse = pygame.mouse.get_pressed()
+
+        for button in buttons:
+            if button.rect.collidepoint(mouse_pos):
+                if left_mouse:
+                    button.active()
+                else:
+                    button.hover()
+            else:
+                button.unfocused()
+
+            button.draw(window)
+
+        window.update()
 
 
 if __name__ == '__main__':
