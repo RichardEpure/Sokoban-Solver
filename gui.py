@@ -38,10 +38,15 @@ class Component(ABC):
     def __init__(self):
         self.render = None
         self.rect = None
+        self.center_x = self.center_y = 0
+
+    def _update_rects(self):
+        self.rect.centerx = self.center_x
+        self.rect.centery = self.center_y
 
     def set_centre(self, x, y):
-        self.rect.centerx = x
-        self.rect.centery = y
+        self.center_x = x
+        self.center_y = y
 
     def draw(self, context):
         if isinstance(context, Window):
@@ -51,7 +56,7 @@ class Component(ABC):
 
 
 class Button(Component):
-    def __init__(self, path, text_content="", size=(400, 100), font_size=36, font_colour=(255,255,255)):
+    def __init__(self, path, text_content="", size=(400, 100), font_size=36, font_colour=(255, 255, 255)):
         super().__init__()
 
         image = load_png(f'{path}.png')
@@ -82,21 +87,24 @@ class Button(Component):
 
         self.render = self.image
         self.rect = image_rect
-        self.normal_rect = self.rect
-        self.active_rect = self.rect
+        self.normal_rect = self.rect.copy()
+        self.active_rect = image_active.get_rect()
 
         self.font = font
         self.text = text
 
+    def __update_rects(self):
+        super()._update_rects()
+        self.normal_rect.centerx = self.center_x
+        self.normal_rect.centery = self.center_y
+
+        y_offset = (self.normal_rect.height - self.active_rect.height) / 2
+        self.active_rect.centerx = self.center_x
+        self.active_rect.centery = self.center_y + y_offset
+
     def set_centre(self, x, y):
         super().set_centre(x, y)
-        self.active_rect = self.rect.copy()
-        offset = self.rect.height/8
-        self.active_rect.height = offset * 7
-        self.active_rect.centery += offset
-        self.normal_rect = self.rect.copy()
-        print(self.rect)
-        print(self.active_rect)
+        self.__update_rects()
 
     def draw(self, context):
         self.rect = self.normal_rect
@@ -110,6 +118,14 @@ class Button(Component):
             self.render = self.image
 
         super().draw(context)
+
+    def handle_mouse_events(self, mouse_pos, mouse_pressed):
+        left, middle, right = mouse_pressed
+
+        if self.normal_rect.collidepoint(mouse_pos):
+            self.active() if left else self.hover()
+        else:
+            self.unfocused()
 
     def active(self):
         self.is_active = True

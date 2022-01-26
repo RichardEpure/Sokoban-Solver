@@ -42,25 +42,25 @@ def main():
     button.draw(window)
 
     # Event loop
+    # TODO: make rect for click and rect for size separate
     while True:
         window.background.fill((0,0,0))
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 return
 
-        mouse_pos = pygame.mouse.get_pos()
-        left_mouse, mouse_wheel, right_mouse = pygame.mouse.get_pressed()
+            if event.type == pygame.MOUSEBUTTONUP:
+                pass
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pass
 
         for button in buttons:
-            if button.rect.collidepoint(mouse_pos):
-                if left_mouse:
-                    button.active()
-                else:
-                    button.hover()
-            else:
-                button.unfocused()
-
+            button.handle_mouse_events(mouse_pos, mouse_pressed)
             button.draw(window)
 
         window.update()
