@@ -17,6 +17,7 @@ class Window:
     def update(self):
         self.window.blit(self.background, (0, 0))
         pygame.display.flip()
+        self.background.fill((0, 0, 0))
 
     def draw(self, item, item_rect=None):
         if item_rect:
@@ -91,7 +92,7 @@ class Button(Component):
         self.active_rect = image_active.get_rect()
 
         self.font = font
-        self.text = text
+        self.text = text_content
 
     def __update_rects(self):
         super()._update_rects()
@@ -122,10 +123,13 @@ class Button(Component):
     def handle_mouse_events(self, mouse_pos, mouse_pressed):
         left, middle, right = mouse_pressed
 
-        if self.normal_rect.collidepoint(mouse_pos):
+        if self.is_mouse_over(mouse_pos):
             self.active() if left else self.hover()
         else:
             self.unfocused()
+
+    def is_mouse_over(self, mouse_pos):
+        return self.normal_rect.collidepoint(mouse_pos)
 
     def active(self):
         self.is_active = True

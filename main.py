@@ -1,4 +1,5 @@
 import os
+import sys
 import pygame
 from pygame.locals import *
 from gui import *
@@ -34,18 +35,13 @@ def main():
     button = Button('button_green_1', 'Play Game')
     button.set_centre(window.center_x(), window.height/2)
     buttons.append(button)
-    button.draw(window)
 
     button = Button('button_green_1', 'Exit')
     button.set_centre(window.center_x(), window.height/2 + button.rect.height + 30)
     buttons.append(button)
-    button.draw(window)
 
     # Event loop
-    # TODO: make rect for click and rect for size separate
     while True:
-        window.background.fill((0,0,0))
-
         mouse_pos = pygame.mouse.get_pos()
         mouse_pressed = pygame.mouse.get_pressed()
 
@@ -54,7 +50,10 @@ def main():
                 return
 
             if event.type == pygame.MOUSEBUTTONUP:
-                pass
+                for button in buttons:
+                    if button.is_mouse_over(mouse_pos) and button.text.lower() == "exit":
+                        pygame.quit()
+                        sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
