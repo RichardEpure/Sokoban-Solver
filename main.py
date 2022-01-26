@@ -31,10 +31,10 @@ def main():
     txt_test.set_centre_x(config.window.center_x())
     txt_test.set_origin_y(100)
 
-    btn_play_game = Button('button_green_1', 'Play Game')
+    btn_play_game = Button('button_green_1', Text("Play Game"))
     btn_play_game.set_centre(config.window.center_x(), config.window.height/2)
 
-    btn_exit = Button('button_green_1', 'Exit')
+    btn_exit = Button('button_green_1', Text("Exit"))
     btn_exit.set_centre(config.window.center_x(), config.window.height/2 + btn_exit.rect.height + 30)
 
     def btn_exit_click_handler():

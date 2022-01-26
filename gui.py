@@ -98,7 +98,7 @@ class Clickable(ABC):
 
 
 class Button(GuiComponent, Clickable):
-    def __init__(self, path, text_content="", size=(400, 100), font_size=36, font_colour=(255, 255, 255)):
+    def __init__(self, path, txt_component, size=(400, 100)):
         super().__init__()
 
         image = load_png(f'{path}.png')
@@ -110,15 +110,11 @@ class Button(GuiComponent, Clickable):
         image_active = pygame.transform.scale(image_active, (size[0], (size[1]/8)*7))
         image_rect = image.get_rect()
 
-        font = pygame.font.Font(None, font_size)
-        text = font.render(text_content, True, font_colour)
-        text_rect = text.get_rect()
-        text_rect.centerx = image_rect.centerx
-        text_rect.centery = image_rect.centery * 0.8
-
-        image.blit(text, text_rect)
-        image_hover.blit(text, text_rect)
-        image_active.blit(text, text_rect)
+        txt_component.set_centre(image_rect.centerx, image_rect.centery * 0.8)
+        txt_component.draw(image)
+        txt_component.draw(image_hover)
+        txt_component.draw(image_active)
+        self.text = txt_component
 
         self.is_active = False
         self.is_hover = False
@@ -132,9 +128,6 @@ class Button(GuiComponent, Clickable):
         self.normal_rect = self.rect.copy()
         self.active_rect = image_active.get_rect()
 
-        self.font = font
-        self.text = text_content
-
     def _update_rects_centre(self):
         super()._update_rects_centre()
         self.normal_rect.centerx = self.center_x
@@ -143,7 +136,7 @@ class Button(GuiComponent, Clickable):
         y_offset = (self.normal_rect.height - self.active_rect.height) / 2
         self.active_rect.centerx = self.center_x
         self.active_rect.centery = self.center_y + y_offset
-        
+
     def _update_rects_origin(self):
         super()._update_rects_origin()
         self.normal_rect.x = self.x
