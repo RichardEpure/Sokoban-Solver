@@ -1,8 +1,7 @@
-import os
 import sys
 import pygame
-from pygame.locals import *
 from gui import *
+from manager import *
 
 
 def main():
@@ -23,45 +22,37 @@ def main():
     window = Window(1920, 1080)
     pygame.display.set_caption('Sokoban')
 
+    main_menu = Scene(window)
+
     # Display some text
-    font = pygame.font.Font(None, 36)
-    text = font.render("Sokoban", True, (255, 255, 255))
-    textpos = text.get_rect()
-    textpos.centerx = window.get_rect().centerx
-    window.draw(text, textpos)
+    txt_title = Text("Sokoban")
+    txt_title.set_centre_x(window.center_x())
+    txt_title.set_origin_y(0)
 
-    buttons = []
+    btn_play_game = Button('button_green_1', 'Play Game')
+    btn_play_game.set_centre(window.center_x(), window.height/2)
 
-    button = Button('button_green_1', 'Play Game')
-    button.set_centre(window.center_x(), window.height/2)
-    buttons.append(button)
+    btn_exit = Button('button_green_1', 'Exit')
+    btn_exit.set_centre(window.center_x(), window.height/2 + btn_exit.rect.height + 30)
 
-    button = Button('button_green_1', 'Exit')
-    button.set_centre(window.center_x(), window.height/2 + button.rect.height + 30)
-    buttons.append(button)
+    def btn_exit_click_handler():
+        pygame.quit()
+        sys.exit()
+    btn_exit.onclick_event_handler = btn_exit_click_handler
+
+    main_menu.add_components([btn_play_game, btn_exit, txt_title])
 
     # Event loop
     while True:
         mouse_pos = pygame.mouse.get_pos()
         mouse_pressed = pygame.mouse.get_pressed()
-
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                return
-
-            if event.type == pygame.MOUSEBUTTONUP:
-                for button in buttons:
-                    if button.is_mouse_over(mouse_pos) and button.text.lower() == "exit":
-                        pygame.quit()
-                        sys.exit()
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
-
-        for button in buttons:
-            button.handle_mouse_events(mouse_pos, mouse_pressed)
-            button.draw(window)
-
+        events = pygame.event.get()
+        Scene.event_data.update({
+            'mouse_pos': mouse_pos,
+            'mouse_pressed': mouse_pressed,
+            'events': events
+        })
+        main_menu.update()
         window.update()
 
 

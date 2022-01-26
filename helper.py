@@ -1,6 +1,5 @@
 import os
 import pygame
-from pygame.locals import *
 
 
 def load_png(name):

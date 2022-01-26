@@ -1,8 +1,6 @@
-import os
 import pygame
-from pygame.locals import *
 from helper import load_png
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class Window:
@@ -35,19 +33,24 @@ class Window:
         return self.background.get_rect().centery
 
 
-class Component(ABC):
+class GuiComponent(ABC):
     def __init__(self):
+        super().__init__()
         self.render = None
         self.rect = None
-        self.center_x = self.center_y = 0
+        self.center_x = self.center_y = self.x = self.y = 0
 
-    def _update_rects(self):
+    def _update_rects_centre(self):
         self.rect.centerx = self.center_x
         self.rect.centery = self.center_y
+        self.x = self.rect.x
+        self.y = self.rect.y
 
-    def set_centre(self, x, y):
-        self.center_x = x
-        self.center_y = y
+    def _update_rects_origin(self):
+        self.rect.x = self.x
+        self.rect.y = self.y
+        self.center_x = self.rect.centerx
+        self.center_y = self.rect.centery
 
     def draw(self, context):
         if isinstance(context, Window):
@@ -55,8 +58,46 @@ class Component(ABC):
         else:
             context.blit(self.render, self.rect)
 
+    def set_centre(self, x, y):
+        self.center_x = x
+        self.center_y = y
+        self._update_rects_centre()
 
-class Button(Component):
+    def set_centre_x(self, x):
+        self.center_x = x
+        self._update_rects_centre()
+
+    def set_centre_y(self, y):
+        self.center_y = y
+        self._update_rects_centre()
+
+    def set_origin(self, x, y):
+        self.x = x
+        self.y = y
+        self._update_rects_origin()
+
+    def set_origin_x(self, x):
+        self.x = x
+        self._update_rects_origin()
+
+    def set_origin_y(self, y):
+        self.y = y
+        self._update_rects_origin()
+
+
+class Clickable(ABC):
+    def __init__(self):
+        super().__init__()
+
+        def onclick():
+            pass
+        self.onclick_event_handler = onclick
+
+    def handle_click_event(self):
+        self.onclick_event_handler()
+
+
+class Button(GuiComponent, Clickable):
     def __init__(self, path, text_content="", size=(400, 100), font_size=36, font_colour=(255, 255, 255)):
         super().__init__()
 
@@ -94,18 +135,23 @@ class Button(Component):
         self.font = font
         self.text = text_content
 
-    def __update_rects(self):
-        super()._update_rects()
+    def _update_rects_centre(self):
+        super()._update_rects_centre()
         self.normal_rect.centerx = self.center_x
         self.normal_rect.centery = self.center_y
 
         y_offset = (self.normal_rect.height - self.active_rect.height) / 2
         self.active_rect.centerx = self.center_x
         self.active_rect.centery = self.center_y + y_offset
+        
+    def _update_rects_origin(self):
+        super()._update_rects_origin()
+        self.normal_rect.x = self.x
+        self.normal_rect.y = self.y
 
-    def set_centre(self, x, y):
-        super().set_centre(x, y)
-        self.__update_rects()
+        y_offset = self.normal_rect.height - self.active_rect.height
+        self.active_rect.x = self.x
+        self.active_rect.y = self.y + y_offset
 
     def draw(self, context):
         self.rect = self.normal_rect
@@ -142,3 +188,15 @@ class Button(Component):
     def unfocused(self):
         self.is_active = False
         self.is_hover = False
+
+
+class Text(GuiComponent):
+    def __init__(self, text_content="", font_size=36, font_colour=(255, 255, 255)):
+        super().__init__()
+        font = pygame.font.Font(None, font_size)
+        text = font.render(text_content, True, font_colour)
+        self.rect = text.get_rect()
+        self.render = text
+
+
+__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text"]
