@@ -4,3 +4,7 @@ from gui import Window
 
 window = Window(1920, 1080)
 current_scene = Scene(window)
+scene_list = {
+    "Main Menu": Scene(window),
+    "Test Menu": Scene(window)
+}

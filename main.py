@@ -18,15 +18,18 @@ def main():
 
             print(level[i])
 
-    # Initialise screen
     pygame.init()
     pygame.display.set_caption('Sokoban')
 
-    main_menu = Scene(config.window)
+    scn_main_menu = config.scene_list["Main Menu"]
 
     txt_title = Text("Sokoban")
     txt_title.set_centre_x(config.window.center_x())
     txt_title.set_origin_y(0)
+
+    txt_test = Text("Test Text")
+    txt_test.set_centre_x(config.window.center_x())
+    txt_test.set_origin_y(100)
 
     btn_play_game = Button('button_green_1', 'Play Game')
     btn_play_game.set_centre(config.window.center_x(), config.window.height/2)
@@ -39,8 +42,9 @@ def main():
         sys.exit()
     btn_exit.onclick_event_handler = btn_exit_click_handler
 
-    main_menu.add_components([btn_play_game, btn_exit, txt_title])
-    config.current_scene = main_menu
+    scn_main_menu.add_components([btn_play_game, btn_exit, txt_title])
+
+    config.current_scene = scn_main_menu
 
     # Event loop
     while True:
