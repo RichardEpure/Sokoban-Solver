@@ -24,7 +24,6 @@ def main():
 
     main_menu = Scene(window)
 
-    # Display some text
     txt_title = Text("Sokoban")
     txt_title.set_centre_x(window.center_x())
     txt_title.set_origin_y(0)
