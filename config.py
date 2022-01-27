@@ -1,10 +1,20 @@
-from manager import Scene
+import pygame
 from gui import Window
 
+pygame.init()
 
-window = Window(1920, 1080)
-current_scene = Scene(window)
+start_width = 1280
+start_height = 720
+window = Window(start_width, start_height)
+
+path_style = 'resources/style.json'
+
+if True:  # noqa: E402
+    from manager import Scene
+
+current_scene = Scene()
 scene_list = {
-    "Main Menu": Scene(window),
-    "Test Menu": Scene(window)
+    "Main Menu": Scene(),
+    "Level Select": Scene(),
+    "Test Menu": Scene()
 }

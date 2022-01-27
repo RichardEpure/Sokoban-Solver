@@ -4,7 +4,7 @@ import pygame
 
 def load_png(name):
     """ Load image and return image object"""
-    fullname = os.path.join('resources\images', name)
+    fullname = os.path.join('resources/images', name)
     try:
         image = pygame.image.load(fullname)
         if image.get_alpha() is None:

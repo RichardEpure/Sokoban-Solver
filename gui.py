@@ -1,19 +1,28 @@
 import pygame
-from helper import load_png
+import pygame_gui
+from pygame_gui.core import ObjectID, UIElement, IContainerLikeInterface
+from pygame_gui.core.interfaces import IUIManagerInterface
+from typing import Union, Dict, Iterable
 from abc import ABC
+
+import config
+from helper import load_png
 
 
 class Window:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.window = pygame.display.set_mode((width, height))
+        self.x_scaling = 1
+        self.y_scaling = 1
+        self.window = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         self.background = pygame.Surface(self.window.get_size())
         self.background = self.background.convert()
         self.background.fill((0, 0, 0))
 
-    def update(self):
+    def update(self, ui_manager):
         self.window.blit(self.background, (0, 0))
+        ui_manager.draw_ui(self.window)
         pygame.display.flip()
         self.background.fill((0, 0, 0))
 
@@ -23,6 +32,13 @@ class Window:
         else:
             self.background.blit(item, item.get_rect())
 
+    def resize(self, width, height):
+        self.width = width
+        self.height = height
+        self.x_scaling = self.width / config.start_width
+        self.y_scaling = self.height / config.start_height
+        self.background = pygame.transform.scale(self.background, (width, height))
+
     def get_rect(self):
         return self.background.get_rect()
 
@@ -31,6 +47,40 @@ class Window:
 
     def center_y(self):
         return self.background.get_rect().centery
+
+
+class GButton(pygame_gui.elements.UIButton):
+    def __init__(self, relative_rect: pygame.Rect,
+                 text: str,
+                 manager: IUIManagerInterface,
+                 container: Union[IContainerLikeInterface, None] = None,
+                 tool_tip_text: Union[str, None] = None,
+                 starting_height: int = 1,
+                 parent_element: UIElement = None,
+                 object_id: Union[ObjectID, str, None] = None,
+                 anchors: Dict[str, str] = None,
+                 allow_double_clicks: bool = False,
+                 generate_click_events_from: Iterable[int] = frozenset([pygame.BUTTON_LEFT]),
+                 visible: int = 1
+                 ):
+        super().__init__(relative_rect, text, manager, container, tool_tip_text, starting_height,
+                         parent_element, object_id, anchors, allow_double_clicks, generate_click_events_from, visible)
+
+        def on_btn_down():
+            pass
+        self.on_btn_down = on_btn_down
+
+        def on_click():
+            pass
+        self.on_click = on_click
+
+    def process_event(self, event: pygame.event.Event) -> bool:
+        if event.type == pygame_gui.UI_BUTTON_START_PRESS and event.ui_element == self:
+            self.on_btn_down()
+        if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == self:
+            self.on_click()
+
+        return super().process_event(event)
 
 
 class GuiComponent(ABC):
@@ -53,10 +103,17 @@ class GuiComponent(ABC):
         self.center_y = self.rect.centery
 
     def draw(self, context):
+        rect = self.rect.copy()
+        render = self.render.copy()
+        rect.x *= config.window.x_scaling
+        rect.y *= config.window.y_scaling
+        width = rect.width * config.window.x_scaling
+        height = rect.height * config.window.y_scaling
+        render = pygame.transform.smoothscale(render, (width, height))
         if isinstance(context, Window):
-            context.background.blit(self.render, self.rect)
+            context.background.blit(render, rect)
         else:
-            context.blit(self.render, self.rect)
+            context.blit(render, rect)
 
     def set_centre(self, x, y):
         self.center_x = x
@@ -192,4 +249,4 @@ class Text(GuiComponent):
         self.render = text
 
 
-__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text"]
+__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton"]
