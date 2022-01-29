@@ -290,4 +290,42 @@ class Text(GuiComponent):
         self.render = text
 
 
-__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton", "GFileDialog"]
+class Tile(GuiComponent):
+    def __init__(self, path, size=(64, 64)):
+        super().__init__()
+
+        image = load_png(f'{path}.png')
+        image = pygame.transform.scale(image, size)
+        image_rect = image.get_rect()
+
+        self.image = image
+        self.render = image
+        self.rect = image_rect
+
+
+class Box(Tile):
+    def __init__(self, box_texture, docked_texture, size=(64, 64)):
+        super().__init__(box_texture, size)
+
+        image_docked = load_png(f'{docked_texture}.png')
+        image_docked = pygame.transform.scale(image_docked, size)
+
+        self.image_docked = image_docked
+        self.is_docked = False
+
+    def draw(self, context):
+        if self.is_docked:
+            self.render = self.image_docked
+        else:
+            self.render = self.image
+
+        super().draw(context)
+
+    def docked(self):
+        self.is_docked = True
+
+    def undocked(self):
+        self.is_docked = False
+
+
+__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton", "GFileDialog", "Tile", "Box"]

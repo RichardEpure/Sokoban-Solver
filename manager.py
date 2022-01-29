@@ -4,6 +4,8 @@ import pygame_gui
 import config
 from pygame.locals import *
 from gui import *
+from sokoban import *
+from helper import parse_level
 
 
 class Scene:
@@ -12,6 +14,7 @@ class Scene:
     def __init__(self, components=None):
         self.components = components if components else []
         self.ui_manager = pygame_gui.UIManager((config.start_width, config.start_height), config.path_style)
+        self.game_manager = None
 
     def update(self, time_delta):
         mouse_pos = pygame.mouse.get_pos()
@@ -42,6 +45,39 @@ class Scene:
 
         self.ui_manager.update(time_delta)
         self.window.update(self.ui_manager)
+
+    def initialise_game(self, path):
+        self.game_manager = GameManager(parse_level(path))
+        level = self.game_manager.level
+        for i in range(len(level)):
+            for j in range(len(level[i])):
+                entities = level[i][j]
+                entities_to_add = []
+
+                if Entity.FLOOR in entities or not entities:
+                    floor = Tile('floor')
+                    entities_to_add.append(floor)
+
+                if Entity.DOCK in entities:
+                    dock = Tile('dock')
+                    entities_to_add.append(dock)
+
+                if Entity.BOX in entities:
+                    box = Box('box', 'box--docked')
+                    entities_to_add.append(box)
+
+                if Entity.WALL in entities:
+                    wall = Tile('wall')
+                    entities_to_add.append(wall)
+
+                if Entity.PLAYER in entities:
+                    player = Tile('player')
+                    entities_to_add.append(player)
+
+                for entity in entities_to_add:
+                    entity.set_origin(j * entity.rect.width, i * entity.rect.height)
+
+                self.add_components(entities_to_add)
 
     def add_components(self, components):
         try:

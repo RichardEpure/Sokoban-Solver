@@ -1,32 +1,7 @@
 import sys
 import pygame
-import pygame_gui
 import config
 from gui import *
-
-
-def main():
-    level = []
-    with open('resources/levels/xsokoban/xsokoban_1.txt', 'r') as f:
-        lines = f.readlines()
-
-        for i in range(0, len(lines)):
-            line = str.rstrip(lines[i])
-            level.append([])
-            for j in range(0, len(line)):
-                level[i].append(line[j])
-
-            print(level[i])
-
-    setup_main_menu()
-    setup_level_select()
-
-    config.current_scene = config.scene_list["Main Menu"]
-
-    clock = pygame.time.Clock()
-    while True:
-        time_delta = clock.tick(60) / 1000.0
-        config.current_scene.update(time_delta)
 
 
 def setup_level_select():
@@ -41,7 +16,8 @@ def setup_level_select():
                          initial_file_path=config.path_levels)
 
     def on_file_select(path):
-        print(f"file selected: {path}")
+        config.scene_list["Game"].initialise_game(path)
+        config.current_scene = config.scene_list["Game"]
     select.on_file_select = on_file_select
 
     def on_window_close():
@@ -78,6 +54,18 @@ def setup_main_menu():
     btn_exit.onclick_event_handler = btn_exit_click_handler
 
     scn_main_menu.add_components([btn_play_game, btn_exit, txt_title])
+
+
+def main():
+    setup_main_menu()
+    setup_level_select()
+
+    config.current_scene = config.scene_list["Main Menu"]
+
+    clock = pygame.time.Clock()
+    while True:
+        time_delta = clock.tick(60) / 1000.0
+        config.current_scene.update(time_delta)
 
 
 if __name__ == '__main__':
