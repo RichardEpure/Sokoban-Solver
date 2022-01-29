@@ -3,8 +3,8 @@ from gui import Window
 
 pygame.init()
 
-start_width = 1280
-start_height = 720
+start_width = 3840
+start_height = 2160
 window = Window(start_width, start_height)
 
 path_style = 'resources/style.json'
