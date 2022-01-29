@@ -32,17 +32,21 @@ def main():
 def setup_level_select():
     scn_level_select = config.scene_list["Level Select"]
 
-    hello_button = GButton(relative_rect=pygame.Rect(30, 20, 200, 60),
-                           text='Say Hello',
-                           manager=scn_level_select.ui_manager)
+    select_rect = pygame.Rect((0, 0), (800, 800))
+    select_rect.centerx = config.window.center_x()
+    select_rect.centery = config.window.center_y()
+    select = GFileDialog(rect=select_rect,
+                         manager=scn_level_select.ui_manager,
+                         window_title="Select a level",
+                         initial_file_path=config.path_levels)
 
-    def on_btn_down():
-        print("btn_down")
-    hello_button.on_btn_down = on_btn_down
+    def on_file_select(path):
+        print(f"file selected: {path}")
+    select.on_file_select = on_file_select
 
-    def on_click():
-        print("click")
-    hello_button.on_click = on_click
+    def on_window_close():
+        config.current_scene = config.scene_list["Main Menu"]
+    select.on_window_close = on_window_close
 
 
 def setup_main_menu():

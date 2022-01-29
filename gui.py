@@ -71,10 +71,12 @@ class GButton(pygame_gui.elements.UIButton):
 
         def on_btn_down():
             pass
+
         self.on_btn_down = on_btn_down
 
         def on_click():
             pass
+
         self.on_click = on_click
 
     def process_event(self, event: pygame.event.Event) -> bool:
@@ -84,6 +86,41 @@ class GButton(pygame_gui.elements.UIButton):
             self.on_click()
 
         return super().process_event(event)
+
+
+class GFileDialog(pygame_gui.windows.UIFileDialog):
+    def __init__(self,
+                 rect: pygame.Rect,
+                 manager: IUIManagerInterface,
+                 window_title: str = 'pygame-gui.file_dialog_title_bar',
+                 initial_file_path: Union[str, None] = None,
+                 object_id: Union[ObjectID, str] = ObjectID('#file_dialog', None),
+                 allow_existing_files_only: bool = False,
+                 allow_picking_directories: bool = False,
+                 visible: int = 1
+                 ):
+        super().__init__(rect, manager, window_title, initial_file_path, object_id, allow_existing_files_only,
+                         allow_picking_directories, visible)
+
+        def on_file_select(path):
+            pass
+        self.on_file_select = on_file_select
+
+        def on_window_close():
+            pass
+        self.on_window_close = on_window_close
+
+    def process_event(self, event: pygame.event.Event) -> bool:
+        if event.type == pygame_gui.UI_FILE_DIALOG_PATH_PICKED and event.ui_element == self:
+            self.on_file_select(event.text)
+
+        return super().process_event(event)
+
+    def on_close_window_button_pressed(self):
+        self.on_window_close()
+
+    def kill(self):
+        pass
 
 
 class GuiComponent(ABC):
@@ -151,6 +188,7 @@ class Clickable(ABC):
 
         def onclick():
             pass
+
         self.onclick_event_handler = onclick
 
     def handle_click_event(self):
@@ -167,7 +205,7 @@ class Button(GuiComponent, Clickable):
 
         image = pygame.transform.scale(image, size)
         image_hover = pygame.transform.scale(image_hover, size)
-        image_active = pygame.transform.scale(image_active, (size[0], (size[1]/8)*7))
+        image_active = pygame.transform.scale(image_active, (size[0], (size[1] / 8) * 7))
         image_rect = image.get_rect()
 
         txt_component.set_centre(image_rect.centerx, image_rect.centery * 0.8)
@@ -252,4 +290,4 @@ class Text(GuiComponent):
         self.render = text
 
 
-__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton"]
+__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton", "GFileDialog"]
