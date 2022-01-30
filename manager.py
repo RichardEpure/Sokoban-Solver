@@ -49,7 +49,7 @@ class Scene:
                     has_moved = self.game_manager.move(Direction.WEST)
 
                 if has_moved:
-                    self.level_gui.update()
+                    self.__update_level_gui()
 
             self.ui_manager.process_events(event)
 
@@ -65,6 +65,7 @@ class Scene:
         self.game_manager = GameManager(parse_level(path))
         level = self.game_manager.level
         self.level_gui = GridContainer((len(level[0]) * config.tile_size[1], len(level) * config.tile_size[0]))
+        self.level_gui.set_centre(config.window.center_x(), config.window.center_y())
         self.__update_level_gui()
         self.add_components(self.level_gui)
 
@@ -103,7 +104,6 @@ class Scene:
                 components[i].append(entities_to_add)
 
         self.level_gui.set_components(components)
-        self.level_gui.set_centre(config.window.center_x(), config.window.center_y())
         self.level_gui.update()
 
     def add_components(self, components):

@@ -101,7 +101,7 @@ class GameManager:
             self.__move_entity(box_pos, new_box_pos, Entity.BOX)
         self.__move_entity(self.player_pos, new_player_pos, Entity.PLAYER)
 
-        self.__output_game_state()
+        return True
 
 
 __all__ = ["Direction", "Entity", "GameManager"]
