@@ -49,35 +49,43 @@ class Scene:
     def initialise_game(self, path):
         self.game_manager = GameManager(parse_level(path))
         level = self.game_manager.level
+        level_gui = GridContainer((len(level[0]) * config.tile_size[1], len(level) * config.tile_size[0]))
+        components = []
         for i in range(len(level)):
+            components.append([])
             for j in range(len(level[i])):
                 entities = level[i][j]
                 entities_to_add = []
 
                 if Entity.FLOOR in entities or not entities:
-                    floor = Tile('floor')
-                    entities_to_add.append(floor)
+                    entity = Tile('floor')
+                    entities_to_add.append(entity)
 
                 if Entity.DOCK in entities:
-                    dock = Tile('dock')
-                    entities_to_add.append(dock)
+                    entity = Tile('dock')
+                    entities_to_add.append(entity)
 
                 if Entity.BOX in entities:
-                    box = Box('box', 'box--docked')
-                    entities_to_add.append(box)
+                    entity = Box('box', 'box--docked')
+                    entities_to_add.append(entity)
 
                 if Entity.WALL in entities:
-                    wall = Tile('wall')
-                    entities_to_add.append(wall)
+                    entity = Tile('wall')
+                    entities_to_add.append(entity)
 
                 if Entity.PLAYER in entities:
-                    player = Tile('player')
-                    entities_to_add.append(player)
+                    entity = Tile('player')
+                    entities_to_add.append(entity)
 
                 for entity in entities_to_add:
                     entity.set_origin(j * entity.rect.width, i * entity.rect.height)
+                    
+                components[i].append(entities_to_add)
 
-                self.add_components(entities_to_add)
+        level_gui.set_components(components)
+        level_gui.set_centre(config.window.center_x(), config.window.center_y())
+        level_gui.update()
+        self.add_components(level_gui)
 
     def add_components(self, components):
         try:

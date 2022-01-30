@@ -1,7 +1,11 @@
 import pygame
-from gui import Window
 
 pygame.init()
+
+tile_size = (64, 64)
+
+if True:  # noqa: E402
+    from gui import Window
 
 start_width = 3840
 start_height = 2160

@@ -291,7 +291,7 @@ class Text(GuiComponent):
 
 
 class Tile(GuiComponent):
-    def __init__(self, path, size=(64, 64)):
+    def __init__(self, path, size=config.tile_size):
         super().__init__()
 
         image = load_png(f'{path}.png')
@@ -304,7 +304,7 @@ class Tile(GuiComponent):
 
 
 class Box(Tile):
-    def __init__(self, box_texture, docked_texture, size=(64, 64)):
+    def __init__(self, box_texture, docked_texture, size=config.tile_size):
         super().__init__(box_texture, size)
 
         image_docked = load_png(f'{docked_texture}.png')
@@ -328,4 +328,28 @@ class Box(Tile):
         self.is_docked = False
 
 
-__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton", "GFileDialog", "Tile", "Box"]
+class GridContainer(GuiComponent):
+    def __init__(self, size, components=None):
+        super().__init__()
+        self.components = components if components is not None else [[]]
+        self.background = pygame.Surface(size)
+        self.background.convert()
+        self.background.fill((100, 100, 100))
+        self.rect = self.background.get_rect()
+        self.render = self.background
+
+    def update(self):
+        self.background.fill((100, 100, 100))
+        for i in range(len(self.components)):
+            for j in range(len(self.components[i])):
+                for component in self.components[i][j]:
+                    component.draw(self.background)
+
+    def set_components(self, components):
+        self.components = components
+
+    def update_component(self, i, j, component):
+        self.components[i][j] = component
+
+
+__all__ = ["Window", "GuiComponent", "Clickable", "Button", "Text", "GButton", "GFileDialog", "Tile", "Box", "GridContainer"]
