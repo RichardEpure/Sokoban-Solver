@@ -88,6 +88,8 @@ class Scene:
 
                 if Entity.BOX in entities:
                     entity = Box('box', 'box--docked')
+                    if Entity.DOCK in entities:
+                        entity.docked()
                     entities_to_add.append(entity)
 
                 if Entity.WALL in entities:
