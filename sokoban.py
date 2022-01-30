@@ -48,7 +48,7 @@ class GameManager:
         return []
 
     def __check_dock(self, pos):
-        if self.level[pos[1]][pos[0]] == Entity.DOCK:
+        if Entity.DOCK in self.level[pos[1]][pos[0]]:
             return True
         return False
 
@@ -59,6 +59,10 @@ class GameManager:
 
         if Entity.PLAYER is entity:
             self.player_pos = new_pos
+
+    def __check_solved(self):
+        if self.docks_left == 0:
+            print("Level Solved")
 
     def move(self, direction: Direction):
         index = None
