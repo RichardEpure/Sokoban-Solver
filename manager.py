@@ -15,6 +15,7 @@ class Scene:
         self.components = components if components else []
         self.ui_manager = pygame_gui.UIManager((config.start_width, config.start_height), config.path_style)
         self.game_manager = None
+        self.level_gui = None
 
     def update(self, time_delta):
         mouse_pos = pygame.mouse.get_pos()
@@ -36,6 +37,20 @@ class Scene:
                     if isinstance(component, Button) and component.is_mouse_over(mouse_pos):
                         component.handle_click_event()
 
+            if event.type == pygame.KEYDOWN and self.game_manager is not None:
+                has_moved = False
+                if event.key == pygame.K_UP:
+                    has_moved = self.game_manager.move(Direction.NORTH)
+                elif event.key == pygame.K_RIGHT:
+                    has_moved = self.game_manager.move(Direction.EAST)
+                elif event.key == pygame.K_DOWN:
+                    has_moved = self.game_manager.move(Direction.SOUTH)
+                elif event.key == pygame.K_LEFT:
+                    has_moved = self.game_manager.move(Direction.WEST)
+
+                if has_moved:
+                    self.level_gui.update()
+
             self.ui_manager.process_events(event)
 
         for component in self.components:
@@ -49,7 +64,12 @@ class Scene:
     def initialise_game(self, path):
         self.game_manager = GameManager(parse_level(path))
         level = self.game_manager.level
-        level_gui = GridContainer((len(level[0]) * config.tile_size[1], len(level) * config.tile_size[0]))
+        self.level_gui = GridContainer((len(level[0]) * config.tile_size[1], len(level) * config.tile_size[0]))
+        self.__update_level_gui()
+        self.add_components(self.level_gui)
+
+    def __update_level_gui(self):
+        level = self.game_manager.level
         components = []
         for i in range(len(level)):
             components.append([])
@@ -57,7 +77,7 @@ class Scene:
                 entities = level[i][j]
                 entities_to_add = []
 
-                if Entity.FLOOR in entities or not entities:
+                if Entity.FLOOR in entities:
                     entity = Tile('floor')
                     entities_to_add.append(entity)
 
@@ -79,13 +99,12 @@ class Scene:
 
                 for entity in entities_to_add:
                     entity.set_origin(j * entity.rect.width, i * entity.rect.height)
-                    
+
                 components[i].append(entities_to_add)
 
-        level_gui.set_components(components)
-        level_gui.set_centre(config.window.center_x(), config.window.center_y())
-        level_gui.update()
-        self.add_components(level_gui)
+        self.level_gui.set_components(components)
+        self.level_gui.set_centre(config.window.center_x(), config.window.center_y())
+        self.level_gui.update()
 
     def add_components(self, components):
         try:

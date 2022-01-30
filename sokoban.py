@@ -19,15 +19,14 @@ class Entity(str, enum.Enum):
 class GameManager:
     def __init__(self, level):
         self.level = level
-        self.player_pos = (0, 0)
-        self.memory = [[]]
-        self.memory_index = 0
+        self.player_pos = [0, 0]
+        self.memory = []
 
         dock_count = 0
         for i in range(len(level)):
             for j in range(len(level[i])):
                 if Entity.PLAYER in level[i][j]:
-                    self.player_pos = (j, i)
+                    self.player_pos = [j, i]
 
                 if Entity.DOCK in level[i][j]:
                     dock_count += 1
@@ -46,7 +45,7 @@ class GameManager:
         entities = self.level[pos[1]][pos[0]]
         if Entity.WALL in entities or Entity.BOX in entities:
             return entities
-        return False
+        return []
 
     def __check_dock(self, pos):
         if self.level[pos[1]][pos[0]] == Entity.DOCK:
@@ -54,13 +53,17 @@ class GameManager:
         return False
 
     def __move_entity(self, old_pos, new_pos, entity):
-        self.level[new_pos[1]][new_pos[0]].append(entity)
-        self.level[old_pos[1]][old_pos[0]].remove(entity)
-        self.memory[self.memory_index].append((old_pos, new_pos, entity))
+        self.level[new_pos[1]][new_pos[0]].append(entity.value)
+        self.level[old_pos[1]][old_pos[0]].remove(entity.value)
+        self.memory[-1].append((old_pos, new_pos, entity.value))
+
+        if Entity.PLAYER is entity:
+            self.player_pos = new_pos
 
     def move(self, direction: Direction):
         index = None
         increment = None
+        self.memory.append([])
 
         if direction == Direction.NORTH:
             index = 1
@@ -74,15 +77,17 @@ class GameManager:
         elif direction == Direction.WEST:
             index = 0
             increment = -1
+        else:
+            return False
 
-        new_player_pos = self.player_pos
+        new_player_pos = self.player_pos.copy()
         new_player_pos[index] += increment
         if Entity.WALL in self.__check_obstacle(new_player_pos):
             return False
 
         if Entity.BOX in self.__check_obstacle(new_player_pos):
-            box_pos = new_player_pos
-            new_box_pos = box_pos
+            box_pos = new_player_pos.copy()
+            new_box_pos = box_pos.copy()
             new_box_pos[index] += increment
             if self.__check_obstacle(new_box_pos):
                 return False
@@ -96,8 +101,7 @@ class GameManager:
             self.__move_entity(box_pos, new_box_pos, Entity.BOX)
         self.__move_entity(self.player_pos, new_player_pos, Entity.PLAYER)
 
-        self.memory_index += 1
-        self.memory[self.memory_index] = []
+        self.__output_game_state()
 
 
 __all__ = ["Direction", "Entity", "GameManager"]
