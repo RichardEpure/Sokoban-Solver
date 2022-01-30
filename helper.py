@@ -33,4 +33,15 @@ def parse_level(path):
                 else:
                     level[i].append([line[j]])
 
+        max_length = max(lengths(level))
+        for row in level:
+            row += [' '] * (max_length - len(row))
+
     return level
+
+
+def lengths(lists):
+    if isinstance(lists, list):
+        yield len(lists)
+        for row in lists:
+            yield from lengths(row)
