@@ -57,6 +57,7 @@ def setup_main_menu():
 
 
 def main():
+    config.window.init()
     setup_main_menu()
     setup_level_select()
 

@@ -15,7 +15,11 @@ class Window:
         self.height = height
         self.x_scaling = 1
         self.y_scaling = 1
-        self.window = pygame.display.set_mode((width, height))
+        self.window = None
+        self.background = None
+
+    def init(self):
+        self.window = pygame.display.set_mode((self.width, self.height))
         display_info = pygame.display.Info()
         self.window = pygame.display.set_mode((display_info.current_w, display_info.current_h))
         pygame.display.toggle_fullscreen()
