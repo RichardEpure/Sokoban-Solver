@@ -1,5 +1,5 @@
 env
 .idea
-
-resources/levels/*
 __pycache__
+resources/levels/*
+training/logs/*
