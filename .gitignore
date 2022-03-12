@@ -1,5 +1,6 @@
 env
+venv
 .idea
 __pycache__
 resources/levels/*
-training/logs/*
+training
