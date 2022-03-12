@@ -1,11 +1,19 @@
 import os
 import time
+
 import gym
 import gym_sokoban
+import numpy as np
+
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
+
+from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
+from sb3_contrib.common.wrappers import ActionMasker
+from sb3_contrib.ppo_mask import MaskablePPO
+
 from config import path_logs, path_models
 
 
@@ -65,10 +73,14 @@ class Solver:
         self.env_name = env_name
         self.path_model = path_model
         self.policy_kwargs = policy_kwargs
+        self.env = None
+        self.model = None
+        self._setup_environment()
+        self.load_model()
+
+    def _setup_environment(self):
         self.env = gym.make(self.env_name)
         self.env.set_maxsteps(200)
-        self.model = None
-        self.load_model()
 
     def load_model(self):
         try:
@@ -122,6 +134,26 @@ class Solver:
         self.env.close()
 
 
+class MaskableSolver(Solver):
+    def __init__(self, path_model, env_name="Sokoban-v0", policy_kwargs=None):
+        super().__init__(path_model, env_name, policy_kwargs)
+
+    def _setup_environment(self):
+        super()._setup_environment()
+        self.env = ActionMasker(self.env, mask_function)
+
+    def load_model(self):
+        try:
+            model = MaskablePPO.load(self.path_model, self.env)
+            self.model = model
+        except FileNotFoundError:
+            print(f'Could not find model at: {self.path_model} Creating new model...')
+            model = MaskablePPO(MaskableActorCriticPolicy, self.env, verbose=1, tensorboard_log=path_logs, policy_kwargs=self.policy_kwargs,
+                                learning_rate=0.0001)
+            self.model = model
+            self.save_model()
+
+
 class SolverA2C(Solver):
     def __init__(self, path_model, env_name="Sokoban-v0", policy_kwargs=None):
         super().__init__(path_model, env_name, policy_kwargs)
@@ -137,16 +169,24 @@ class SolverA2C(Solver):
             self.save_model()
 
 
+def mask_function(env: gym.Env) -> np.ndarray:
+    return env.valid_action_mask()
+
 def main():
     policy_kwargs = dict(net_arch=[dict(pi=[512, 512], vf=[512, 512])])
     reward_logger_callback = RewardLoggerCallback()
     # invalid_move_callback = ExitOnInvalidMoveCallback()
 
-    solver = Solver(os.path.join(path_models, 'PPO_C1'), env_name='Sokoban-learn-v0', policy_kwargs=policy_kwargs)
+    solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E1'), env_name='Sokoban-v0')
+    solver_mask.train_model(100000, callbacks=[reward_logger_callback])
+    # solver_mask.evaluate_model()
+    solver_mask.close()
+
+    # solver = Solver(os.path.join(path_models, 'PPO_C1'), env_name='Sokoban-learn-v0', policy_kwargs=policy_kwargs)
     # solver.train_model(20000, callbacks=[reward_logger_callback])
     # solver.test()
-    solver.evaluate_model()
-    solver.close()
+    # solver.evaluate_model()
+    # solver.close()
 
     # solver = Solver(os.path.join(path_models, 'PPO_D8'), env_name='Sokoban-learn-v0', policy_kwargs=policy_kwargs)
     # solver.train_model(20000, callbacks=[reward_logger_callback])
