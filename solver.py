@@ -38,33 +38,14 @@ class RewardLoggerCallback(BaseCallback):
         return True
 
 
-class ExitOnInvalidMoveCallback(BaseCallback):
-    """
-    A custom callback that derives from ``BaseCallback``.
-
-    :param verbose: (int) Verbosity level 0: not output 1: info 2: debug
-    """
-    def __init__(self, threshold=0, verbose=0):
-        super(ExitOnInvalidMoveCallback, self).__init__(verbose)
-        self.threshold = threshold
+class RelevantRewardLoggerCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super(RelevantRewardLoggerCallback, self).__init__(verbose)
 
     def _on_step(self) -> bool:
-        """
-        This method will be called by the model after each call to `env.step()`..
-
-        :return: (bool) If the callback returns False, training is aborted early.
-        """
         reward = self.locals['rewards'][0]
-
-        # If an invalid action is performed enough times, then abort early.
-        counter = 0
-        if reward == -1:
-            counter += 1
-
-        if counter >= self.threshold:
-            print("Abort due to invalid action threshold")
-            return False
-
+        if reward != -0.1:
+            print(reward)
         return True
 
 
@@ -172,27 +153,16 @@ class SolverA2C(Solver):
 def mask_function(env: gym.Env) -> np.ndarray:
     return env.valid_action_mask()
 
+
 def main():
     policy_kwargs = dict(net_arch=[dict(pi=[512, 512], vf=[512, 512])])
     reward_logger_callback = RewardLoggerCallback()
-    # invalid_move_callback = ExitOnInvalidMoveCallback()
+    relevant_reward_logger_callback = RelevantRewardLoggerCallback()
 
     solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E1'), env_name='Sokoban-v0')
     solver_mask.train_model(100000, callbacks=[reward_logger_callback])
     # solver_mask.evaluate_model()
     solver_mask.close()
-
-    # solver = Solver(os.path.join(path_models, 'PPO_C1'), env_name='Sokoban-learn-v0', policy_kwargs=policy_kwargs)
-    # solver.train_model(20000, callbacks=[reward_logger_callback])
-    # solver.test()
-    # solver.evaluate_model()
-    # solver.close()
-
-    # solver = Solver(os.path.join(path_models, 'PPO_D8'), env_name='Sokoban-learn-v0', policy_kwargs=policy_kwargs)
-    # solver.train_model(20000, callbacks=[reward_logger_callback])
-    # solver.test()
-    # solver.evaluate_model()
-    # solver.close()
 
     # Cart pole test
     # solver2 = Solver(env_name='CartPole-v0', path_model=os.path.join(path_models, 'cart-pole'))
