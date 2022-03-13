@@ -11,6 +11,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
+from sb3_contrib.common.maskable.utils import get_action_masks
 from sb3_contrib.common.wrappers import ActionMasker
 from sb3_contrib.ppo_mask import MaskablePPO
 
@@ -44,7 +45,7 @@ class RelevantRewardLoggerCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         reward = self.locals['rewards'][0]
-        if reward != -0.1:
+        if reward > 0 or reward < -0.2:
             print(reward)
         return True
 
@@ -79,9 +80,11 @@ class Solver:
     def test(self, games=5, steps=100):
         for i in range(games):
             obs = self.env.reset()
+            print(f'episode: {i}')
             for j in range(steps):
                 action, _state = self.model.predict(obs, deterministic=False)
                 obs, reward, done, info = self.env.step(action)
+                print(f'{j} - action: {action}, reward: {reward}')
                 self.env.render(mode="human")
                 time.sleep(0.05)
                 if done:
@@ -134,6 +137,20 @@ class MaskableSolver(Solver):
             self.model = model
             self.save_model()
 
+    def test(self, games=5, steps=100):
+        for i in range(games):
+            obs = self.env.reset()
+            print(f'episode: {i}')
+            for j in range(steps):
+                action_masks = get_action_masks(self.env)
+                action, _state = self.model.predict(obs, deterministic=False, action_masks=action_masks)
+                obs, reward, done, info = self.env.step(action)
+                print(f'{j}, action: {action}, reward: {reward} -- action_masks: {action_masks}')
+                self.env.render(mode="human")
+                time.sleep(1)
+                if done:
+                    obs = self.env.reset()
+
 
 class SolverA2C(Solver):
     def __init__(self, path_model, env_name="Sokoban-v0", policy_kwargs=None):
@@ -159,9 +176,14 @@ def main():
     reward_logger_callback = RewardLoggerCallback()
     relevant_reward_logger_callback = RelevantRewardLoggerCallback()
 
-    solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E1'), env_name='Sokoban-v0')
-    solver_mask.train_model(100000, callbacks=[reward_logger_callback])
-    # solver_mask.evaluate_model()
+    # solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E1'), env_name='Sokoban-v0')
+    # solver_mask.train_model(200000, callbacks=[relevant_reward_logger_callback])
+    # solver_mask.test()
+    # solver_mask.close()
+
+    solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E2'), env_name='Sokoban-v0')
+    # solver_mask.train_model(10000, callbacks=[relevant_reward_logger_callback])
+    solver_mask.test()
     solver_mask.close()
 
     # Cart pole test
