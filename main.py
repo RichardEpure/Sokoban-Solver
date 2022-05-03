@@ -32,10 +32,6 @@ def setup_main_menu():
     txt_title.set_centre_x(config.window.center_x())
     txt_title.set_origin_y(0)
 
-    txt_test = Text("Test Text")
-    txt_test.set_centre_x(config.window.center_x())
-    txt_test.set_origin_y(100)
-
     btn_play_game = Button('button_green_1', Text("Play Game"))
     btn_play_game.set_centre(config.window.center_x(), config.window.height / 2)
 

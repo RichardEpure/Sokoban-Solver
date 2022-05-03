@@ -103,8 +103,8 @@ class GFileDialog(pygame_gui.windows.UIFileDialog):
                  allow_picking_directories: bool = False,
                  visible: int = 1
                  ):
-        super().__init__(rect, manager, window_title, initial_file_path, object_id, allow_existing_files_only,
-                         allow_picking_directories, visible)
+        super().__init__(rect, manager, window_title, initial_file_path, object_id,
+                         allow_existing_files_only,allow_picking_directories, visible)
 
         def on_file_select(path):
             pass

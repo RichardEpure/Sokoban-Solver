@@ -33,26 +33,37 @@ class GameManager:
 
         self.total_docks = dock_count
         self.docks_left = dock_count
-        self.__output_game_state()
+        self._output_game_state()
 
-    def __output_game_state(self):
+    def _output_game_state(self):
         for i in range(len(self.level)):
             for j in range(len(self.level[i])):
                 print(self.level[i][j][-1], end='')
             print('')
 
-    def __check_obstacle(self, pos):
+    def _check_wall(self, pos):
         entities = self.level[pos[1]][pos[0]]
-        if Entity.WALL in entities or Entity.BOX in entities:
-            return entities
-        return []
+        if Entity.WALL in entities:
+            return True
+        return False
 
-    def __check_dock(self, pos):
+    def _check_box(self, pos):
+        entities = self.level[pos[1]][pos[0]]
+        if Entity.BOX in entities:
+            return True
+        return False
+
+    def _check_obstacle(self, pos):
+        if self._check_wall(pos) or self._check_box(pos):
+            return True
+        return False
+
+    def _check_dock(self, pos):
         if Entity.DOCK in self.level[pos[1]][pos[0]]:
             return True
         return False
 
-    def __move_entity(self, old_pos, new_pos, entity):
+    def _move_entity(self, old_pos, new_pos, entity):
         self.level[new_pos[1]][new_pos[0]].append(entity.value)
         self.level[old_pos[1]][old_pos[0]].remove(entity.value)
         self.memory[-1].append((old_pos, new_pos, entity.value))
@@ -60,7 +71,7 @@ class GameManager:
         if Entity.PLAYER is entity:
             self.player_pos = new_pos
 
-    def __check_solved(self):
+    def _check_solved(self):
         if self.docks_left == 0:
             print("Level Solved")
 
@@ -86,25 +97,26 @@ class GameManager:
 
         new_player_pos = self.player_pos.copy()
         new_player_pos[index] += increment
-        if Entity.WALL in self.__check_obstacle(new_player_pos):
+        if self._check_wall(new_player_pos):
             return False
 
-        if Entity.BOX in self.__check_obstacle(new_player_pos):
+        if self._check_box(new_player_pos):
             box_pos = new_player_pos.copy()
             new_box_pos = box_pos.copy()
             new_box_pos[index] += increment
-            if self.__check_obstacle(new_box_pos):
+            if self._check_obstacle(new_box_pos):
                 return False
 
-            if self.__check_dock(new_box_pos):
+            if self._check_dock(new_box_pos):
                 self.docks_left -= 1
 
-            if self.__check_dock(box_pos):
+            if self._check_dock(box_pos):
                 self.docks_left += 1
 
-            self.__move_entity(box_pos, new_box_pos, Entity.BOX)
-        self.__move_entity(self.player_pos, new_player_pos, Entity.PLAYER)
+            self._move_entity(box_pos, new_box_pos, Entity.BOX)
 
+        self._move_entity(self.player_pos, new_player_pos, Entity.PLAYER)
+        self._check_solved()
         return True
 
 
