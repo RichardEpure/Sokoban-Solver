@@ -5,7 +5,7 @@ import gym
 import gym_sokoban
 import numpy as np
 
-from stable_baselines3 import PPO, A2C
+from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -21,7 +21,6 @@ from config import path_logs, path_models
 class RewardLoggerCallback(BaseCallback):
     """
     A custom callback that derives from ``BaseCallback``.
-
     :param verbose: (int) Verbosity level 0: not output 1: info 2: debug
     """
     def __init__(self, verbose=0):
@@ -30,7 +29,6 @@ class RewardLoggerCallback(BaseCallback):
     def _on_step(self) -> bool:
         """
         This method will be called by the model after each call to `env.step()`..
-
         :return: (bool) If the callback returns False, training is aborted early.
         """
         # Log training reward
@@ -132,12 +130,13 @@ class MaskableSolver(Solver):
             self.model = model
         except FileNotFoundError:
             print(f'Could not find model at: {self.path_model} Creating new model...')
-            model = MaskablePPO(MaskableActorCriticPolicy, self.env, verbose=1, tensorboard_log=path_logs, policy_kwargs=self.policy_kwargs,
-                                learning_rate=0.0001)
+            model = MaskablePPO(MaskableActorCriticPolicy, self.env, verbose=1,
+                                tensorboard_log=path_logs, policy_kwargs=self.policy_kwargs,
+                                n_steps=50000, batch_size=25000, learning_rate=0.003)
             self.model = model
             self.save_model()
 
-    def test(self, games=5, steps=100):
+    def test(self, games=10, steps=100):
         for i in range(games):
             obs = self.env.reset()
             print(f'episode: {i}')
@@ -145,26 +144,13 @@ class MaskableSolver(Solver):
                 action_masks = get_action_masks(self.env)
                 action, _state = self.model.predict(obs, deterministic=False, action_masks=action_masks)
                 obs, reward, done, info = self.env.step(action)
-                print(f'{j}, action: {action}, reward: {reward} -- action_masks: {action_masks}')
+                if reward > 0 or reward < -0.2:
+                    print(f'{j}, action: {action}, reward: {reward} -- action_masks: {action_masks}')
                 self.env.render(mode="human")
-                time.sleep(1)
+                time.sleep(0.1)
                 if done:
                     obs = self.env.reset()
-
-
-class SolverA2C(Solver):
-    def __init__(self, path_model, env_name="Sokoban-v0", policy_kwargs=None):
-        super().__init__(path_model, env_name, policy_kwargs)
-
-    def load_model(self):
-        try:
-            model = A2C.load(self.path_model, self.env)
-            self.model = model
-        except FileNotFoundError:
-            print(f'Could not find model at: {self.path_model} Creating new model...')
-            model = A2C('MlpPolicy', self.env, verbose=1, tensorboard_log=path_logs, policy_kwargs=self.policy_kwargs, learning_rate=0.000007)
-            self.model = model
-            self.save_model()
+                    break
 
 
 def mask_function(env: gym.Env) -> np.ndarray:
@@ -172,17 +158,12 @@ def mask_function(env: gym.Env) -> np.ndarray:
 
 
 def main():
-    policy_kwargs = dict(net_arch=[dict(pi=[512, 512], vf=[512, 512])])
+    policy_kwargs = dict(net_arch=[dict(pi=[256, 256], vf=[256, 256])])
     reward_logger_callback = RewardLoggerCallback()
     relevant_reward_logger_callback = RelevantRewardLoggerCallback()
 
-    # solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E1'), env_name='Sokoban-v0')
-    # solver_mask.train_model(200000, callbacks=[relevant_reward_logger_callback])
-    # solver_mask.test()
-    # solver_mask.close()
-
-    solver_mask = MaskableSolver(os.path.join(path_models, 'PPO_E2'), env_name='Sokoban-v0')
-    # solver_mask.train_model(10000, callbacks=[relevant_reward_logger_callback])
+    solver_mask = MaskableSolver(os.path.join(path_models, 'rl_model'), env_name='Sokoban-v0', policy_kwargs=policy_kwargs)
+    # solver_mask.train_model(20000000, callbacks=[relevant_reward_logger_callback])
     solver_mask.test()
     solver_mask.close()
 
